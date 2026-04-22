@@ -1,0 +1,62 @@
+[
+  {
+    "id": "gyeonggi-newlywed-loan-interest",
+    "title": "경기도 신혼부부 전세자금 대출이자 지원",
+    "organization": "경기도청",
+    "summary": "신혼부부 대상 전세대출 이자를 일부 지원합니다.",
+    "applicationDeadline": "상시 접수 (예산 소진 시 조기 마감)",
+    "regions": [{ "province": "경기도", "city": "파주시" }],
+    "categories": ["주거", "금융"],
+    "ageRange": { "min": 19, "max": 39 },
+    "eligibleMarriage": ["신혼"],
+    "eligibleChildStatus": ["없음", "있음", "계획 중"],
+    "eligibleGender": "전체",
+    "detail": {
+      "qualification": ["신청일 기준 파주시 거주", "혼인기간 7년 이내", "기준 중위소득 180% 이하"],
+      "documents": ["주민등록등본", "혼인관계증명서", "임대차계약서", "대출확인서"],
+      "support": "연 최대 150만원 한도 내 대출이자 실비 지원"
+    },
+    "officialUrl": "https://www.gg.go.kr",
+    "sourceType": "manual"
+  },
+  {
+    "id": "paju-local-currency-incentive",
+    "title": "파주페이 인센티브 특별지원",
+    "organization": "파주시청",
+    "summary": "파주 지역화폐 충전 시 추가 인센티브를 제공합니다.",
+    "applicationDeadline": "매월 예산 소진 시 종료",
+    "regions": [{ "province": "경기도", "city": "파주시" }],
+    "categories": ["금융", "문화"],
+    "ageRange": { "min": 19, "max": 99 },
+    "eligibleMarriage": ["미혼", "신혼", "기혼"],
+    "eligibleChildStatus": ["없음", "있음", "계획 중"],
+    "eligibleGender": "전체",
+    "detail": {
+      "qualification": ["파주시 거주 또는 파주시 소재 직장 재직자", "만 19세 이상"],
+      "documents": ["신분증", "지역화폐 앱 가입 정보"],
+      "support": "월 충전금액의 최대 10% 인센티브 (정책에 따라 변동)"
+    },
+    "officialUrl": "https://www.paju.go.kr",
+    "sourceType": "manual"
+  },
+  {
+    "id": "gyeonggi-childcare-education",
+    "title": "경기도 아이돌봄·교육 바우처",
+    "organization": "경기도청 / 시군 가족센터",
+    "summary": "자녀 양육 가정에 돌봄 및 교육 바우처를 지원합니다.",
+    "applicationDeadline": "분기별 접수",
+    "regions": [{ "province": "경기도", "city": "파주시" }],
+    "categories": ["교육", "건강"],
+    "ageRange": { "min": 20, "max": 49 },
+    "eligibleMarriage": ["신혼", "기혼"],
+    "eligibleChildStatus": ["있음"],
+    "eligibleGender": "전체",
+    "detail": {
+      "qualification": ["경기도 거주", "만 12세 이하 자녀 양육", "소득기준 충족"],
+      "documents": ["주민등록등본", "가족관계증명서", "소득증빙서류"],
+      "support": "월 최대 20만원 상당 돌봄/교육 바우처"
+    },
+    "officialUrl": "https://www.gyeonggi.go.kr",
+    "sourceType": "manual"
+  }
+]
