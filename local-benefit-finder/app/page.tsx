@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Script from "next/script";
 import {
   BENEFIT_ITEMS,
   type BenefitItem,
@@ -52,7 +51,6 @@ export default function Home() {
   const selectedBenefit = matchedBenefits.find((item) => item.id === selectedBenefitId) ?? null;
   const age = profile.birthYear ? getAgeFromBirthYear(profile.birthYear) : null;
   const cityOptions = REGION_OPTIONS[profile.province] ?? ["전체"];
-  const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
   const onCategoryChange = (category: BenefitCategory, isChecked: boolean) => {
     setProfile((prev) => {
@@ -136,15 +134,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {adsenseClientId && (
-        <Script
-          id="adsense-script"
-          async
-          strategy="afterInteractive"
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
-          crossOrigin="anonymous"
-        />
-      )}
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-8">
         <header className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <p className="text-sm font-semibold text-indigo-600">우리동네 혜택 알리미</p>
