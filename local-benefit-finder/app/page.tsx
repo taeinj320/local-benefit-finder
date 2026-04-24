@@ -28,14 +28,14 @@ const genderOptions: Exclude<Gender, "전체">[] = ["여성", "남성"];
 const provinceOptions = Object.keys(REGION_OPTIONS);
 
 const initialProfile: UserProfile = {
-  province: "서울특별시",
+  province: "",
   city: "전체",
-  birthYear: 1992,
-  gender: "여성",
-  marriageStatus: "신혼",
-  childStatus: "계획 중",
+  birthYear: null,
+  genders: [],
+  marriageStatuses: [],
+  childStatuses: [],
   childAgeGroup: "해당 없음",
-  categories: ["주거", "금융"],
+  categories: [],
 };
 
 export default function Home() {
@@ -50,7 +50,7 @@ export default function Home() {
     [profile, allBenefits],
   );
   const selectedBenefit = matchedBenefits.find((item) => item.id === selectedBenefitId) ?? null;
-  const age = getAgeFromBirthYear(profile.birthYear);
+  const age = profile.birthYear ? getAgeFromBirthYear(profile.birthYear) : null;
   const cityOptions = REGION_OPTIONS[profile.province] ?? ["전체"];
   const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
@@ -60,6 +60,36 @@ export default function Home() {
         return { ...prev, categories: [...prev.categories, category] };
       }
       return { ...prev, categories: prev.categories.filter((item) => item !== category) };
+    });
+  };
+
+  const onGenderChange = (gender: Exclude<Gender, "전체">, isChecked: boolean) => {
+    setProfile((prev) => ({
+      ...prev,
+      genders: isChecked ? [...prev.genders, gender] : prev.genders.filter((item) => item !== gender),
+    }));
+  };
+
+  const onMarriageChange = (status: MarriageStatus, isChecked: boolean) => {
+    setProfile((prev) => ({
+      ...prev,
+      marriageStatuses: isChecked
+        ? [...prev.marriageStatuses, status]
+        : prev.marriageStatuses.filter((item) => item !== status),
+    }));
+  };
+
+  const onChildStatusChange = (status: ChildStatus, isChecked: boolean) => {
+    setProfile((prev) => {
+      const nextStatuses = isChecked
+        ? [...prev.childStatuses, status]
+        : prev.childStatuses.filter((item) => item !== status);
+
+      return {
+        ...prev,
+        childStatuses: nextStatuses,
+        childAgeGroup: nextStatuses.includes("있음") ? prev.childAgeGroup : "해당 없음",
+      };
     });
   };
 
@@ -148,6 +178,7 @@ export default function Home() {
                     setProfile((prev) => ({ ...prev, province: nextProvince, city: nextCity }));
                   }}
                 >
+                  <option value="">광역지자체 선택</option>
                   {provinceOptions.map((province) => (
                     <option key={province} value={province}>
                       {province}
@@ -161,6 +192,7 @@ export default function Home() {
                 <select
                   className="w-full rounded-xl border border-slate-300 px-3 py-2"
                   value={profile.city}
+                  disabled={!profile.province}
                   onChange={(event) => {
                     setProfile((prev) => ({ ...prev, city: event.target.value }));
                   }}
@@ -175,83 +207,96 @@ export default function Home() {
 
               <div>
                 <label className="mb-1 block font-medium">출생연도</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2"
-                  min={1940}
-                  max={2010}
-                  value={profile.birthYear}
-                  onChange={(event) => {
-                    setProfile((prev) => ({ ...prev, birthYear: Number(event.target.value) }));
-                  }}
-                />
-                <p className="mt-1 text-xs text-slate-500">현재 계산 나이: 만 {Math.max(age - 1, 0)}세</p>
+                <div className="relative">
+                  <input
+                    type="number"
+                    className="w-full rounded-xl border border-slate-300 px-3 py-2 pr-10"
+                    min={1940}
+                    max={2010}
+                    placeholder="선택 안함"
+                    value={profile.birthYear ?? ""}
+                    onChange={(event) => {
+                      const value = event.target.value.trim();
+                      setProfile((prev) => ({
+                        ...prev,
+                        birthYear: value ? Number(value) : null,
+                      }));
+                    }}
+                  />
+                  {profile.birthYear && (
+                    <button
+                      type="button"
+                      onClick={() => setProfile((prev) => ({ ...prev, birthYear: null }))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-slate-300 px-2 py-0.5 text-xs text-slate-600"
+                      aria-label="출생연도 지우기"
+                    >
+                      X
+                    </button>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-slate-500">
+                  {age ? `현재 계산 나이: 만 ${Math.max(age - 1, 0)}세` : "출생연도 미선택 시 나이 필터 미적용"}
+                </p>
               </div>
 
               <div>
                 <p className="mb-1 block font-medium">성별</p>
                 <div className="grid grid-cols-2 gap-2">
                   {genderOptions.map((gender) => (
-                    <button
+                    <label
                       key={gender}
-                      type="button"
-                      onClick={() => setProfile((prev) => ({ ...prev, gender }))}
-                      className={`rounded-xl border px-3 py-2 text-left ${
-                        profile.gender === gender
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                          : "border-slate-300"
-                      }`}
+                      className="flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2"
                     >
+                      <input
+                        type="checkbox"
+                        checked={profile.genders.includes(gender)}
+                        onChange={(event) => onGenderChange(gender, event.target.checked)}
+                      />
                       {gender}
-                    </button>
+                    </label>
                   ))}
                 </div>
+                <p className="mt-1 text-xs text-slate-500">미선택 시 전체 성별 대상으로 검색합니다.</p>
               </div>
 
               <div>
                 <p className="mb-1 block font-medium">결혼 여부</p>
                 <div className="grid grid-cols-3 gap-2">
                   {marriageOptions.map((status) => (
-                    <button
+                    <label
                       key={status}
-                      type="button"
-                      onClick={() => setProfile((prev) => ({ ...prev, marriageStatus: status }))}
-                      className={`rounded-xl border px-3 py-2 text-center ${
-                        profile.marriageStatus === status
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                          : "border-slate-300"
-                      }`}
+                      className="flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2"
                     >
+                      <input
+                        type="checkbox"
+                        checked={profile.marriageStatuses.includes(status)}
+                        onChange={(event) => onMarriageChange(status, event.target.checked)}
+                      />
                       {status}
-                    </button>
+                    </label>
                   ))}
                 </div>
+                <p className="mt-1 text-xs text-slate-500">미선택 시 전체 결혼 상태 대상으로 검색합니다.</p>
               </div>
 
               <div>
                 <p className="mb-1 block font-medium">자녀 상태</p>
                 <div className="grid grid-cols-3 gap-2">
                   {childOptions.map((status) => (
-                    <button
+                    <label
                       key={status}
-                      type="button"
-                      onClick={() =>
-                        setProfile((prev) => ({
-                          ...prev,
-                          childStatus: status,
-                          childAgeGroup: status === "있음" ? prev.childAgeGroup : "해당 없음",
-                        }))
-                      }
-                      className={`rounded-xl border px-3 py-2 text-center ${
-                        profile.childStatus === status
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                          : "border-slate-300"
-                      }`}
+                      className="flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2"
                     >
+                      <input
+                        type="checkbox"
+                        checked={profile.childStatuses.includes(status)}
+                        onChange={(event) => onChildStatusChange(status, event.target.checked)}
+                      />
                       {status}
-                    </button>
+                    </label>
                   ))}
                 </div>
+                <p className="mt-1 text-xs text-slate-500">미선택 시 전체 자녀 상태 대상으로 검색합니다.</p>
               </div>
 
               <div>
@@ -261,13 +306,13 @@ export default function Home() {
                     <button
                       key={ageBand}
                       type="button"
-                      disabled={profile.childStatus !== "있음"}
+                      disabled={!profile.childStatuses.includes("있음") || !profile.province}
                       onClick={() => setProfile((prev) => ({ ...prev, childAgeGroup: ageBand }))}
                       className={`rounded-xl border px-3 py-2 text-center ${
                         profile.childAgeGroup === ageBand
                           ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                           : "border-slate-300"
-                      } ${profile.childStatus !== "있음" ? "cursor-not-allowed bg-slate-100 text-slate-400" : ""}`}
+                      } ${!profile.childStatuses.includes("있음") || !profile.province ? "cursor-not-allowed bg-slate-100 text-slate-400" : ""}`}
                     >
                       {ageBand}
                     </button>
@@ -311,6 +356,11 @@ export default function Home() {
               {benefitLoadError && (
                 <p className="mt-1 text-xs text-amber-600">
                   외부 API 연결 경고: {benefitLoadError} (기본 데이터로 동작 중)
+                </p>
+              )}
+              {!profile.province && (
+                <p className="mt-1 text-xs text-indigo-600">
+                  광역지자체를 먼저 선택하면 해당 지역의 전체 혜택이 표시됩니다.
                 </p>
               )}
             </div>
@@ -400,7 +450,9 @@ export default function Home() {
 
             {matchedBenefits.length === 0 && (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">
-                조건에 맞는 혜택이 아직 없어요. 지역이나 카테고리를 조금 넓혀 보세요.
+                {!profile.province
+                  ? "광역지자체를 선택하면 결과가 표시됩니다."
+                  : "조건에 맞는 혜택이 아직 없어요. 조건을 조금 넓혀 보세요."}
               </div>
             )}
           </section>

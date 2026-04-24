@@ -28,13 +28,14 @@ npm run dev
 1. `.env.local`에 실제 값 입력
 
 ```bash
-DATA_GO_KR_API_URL=실제_data_go_kr_엔드포인트
+DATA_GO_KR_API_URL=https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarelistV001
 DATA_GO_KR_API_KEY=실제_서비스키
 ```
 
 2. 개발 서버 재시작 후 확인
 - `http://localhost:3000/api/benefits`
 - 응답의 `sources.external` 값이 1 이상이면 외부 API 데이터가 합쳐진 상태
+- 응답의 `externalError`가 비어 있지 않으면 키/엔드포인트 점검 필요
 
 3. 수동 갱신 스크립트 사용(선택)
 
@@ -67,6 +68,8 @@ NEXT_PUBLIC_AD_SLOT_BOTTOM=3333333333
 추가 설정:
 - `public/ads.txt`가 포함되어 있으며 `https://도메인/ads.txt`로 접근 가능
 - 개인정보처리방침 페이지: `https://도메인/privacy`
+- 사이트맵: `https://도메인/sitemap.xml`
+- robots: `https://도메인/robots.txt`
 
 ## 무료 배포 (도메인 구매/유지 비용 0원)
 

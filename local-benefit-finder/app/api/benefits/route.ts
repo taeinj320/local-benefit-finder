@@ -12,6 +12,10 @@ export async function GET() {
     externalError = error instanceof Error ? error.message : "알 수 없는 외부 API 오류";
   }
 
+  if (!process.env.DATA_GO_KR_API_URL || !process.env.DATA_GO_KR_API_KEY) {
+    externalError = externalError || "DATA_GO_KR_API_URL 또는 DATA_GO_KR_API_KEY 미설정";
+  }
+
   const mergedItems = [...BENEFIT_ITEMS, ...externalItems];
 
   return NextResponse.json({

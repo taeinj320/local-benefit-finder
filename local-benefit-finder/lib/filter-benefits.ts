@@ -11,10 +11,10 @@ import {
 export type UserProfile = {
   province: string;
   city: string;
-  birthYear: number;
-  gender: Exclude<Gender, "전체">;
-  marriageStatus: MarriageStatus;
-  childStatus: ChildStatus;
+  birthYear: number | null;
+  genders: Exclude<Gender, "전체">[];
+  marriageStatuses: MarriageStatus[];
+  childStatuses: ChildStatus[];
   childAgeGroup: ChildAgeGroup;
   categories: BenefitCategory[];
 };
@@ -26,6 +26,10 @@ export function getAgeFromBirthYear(birthYear: number): number {
 }
 
 function isRegionMatched(item: BenefitItem, province: string, city: string): boolean {
+  if (!province) {
+    return false;
+  }
+
   if (item.regions.some((region) => region.province === "전국")) {
     return true;
   }
@@ -44,17 +48,16 @@ function isCategoryMatched(item: BenefitItem, categories: BenefitCategory[]): bo
   return categories.some((category) => item.categories.includes(category));
 }
 
-function isGenderMatched(item: BenefitItem, gender: Exclude<Gender, "전체">): boolean {
-  return item.eligibleGender === "전체" || item.eligibleGender === gender;
+function isGenderMatched(item: BenefitItem, genders: Exclude<Gender, "전체">[]): boolean {
+  if (genders.length === 0) {
+    return true;
+  }
+  return item.eligibleGender === "전체" || genders.includes(item.eligibleGender);
 }
 
 function isChildAgeMatched(item: BenefitItem, profile: UserProfile): boolean {
-  if (profile.childStatus !== "있음") {
-    return true;
-  }
-
   if (profile.childAgeGroup === "해당 없음") {
-    return false;
+    return true;
   }
 
   return (
@@ -68,17 +71,25 @@ export function filterBenefits(profile: UserProfile): BenefitItem[] {
 }
 
 export function filterBenefitsFromItems(profile: UserProfile, items: BenefitItem[]): BenefitItem[] {
-  const age = getAgeFromBirthYear(profile.birthYear);
+  if (!profile.province) {
+    return [];
+  }
+
+  const age = profile.birthYear ? getAgeFromBirthYear(profile.birthYear) : null;
 
   return items.filter((item) => {
-    const isAgeMatched = age >= item.ageRange.min && age <= item.ageRange.max;
-    const isMarriageMatched = item.eligibleMarriage.includes(profile.marriageStatus);
-    const isChildMatched = item.eligibleChildStatus.includes(profile.childStatus);
+    const isAgeMatched = age ? age >= item.ageRange.min && age <= item.ageRange.max : true;
+    const isMarriageMatched =
+      profile.marriageStatuses.length === 0 ||
+      profile.marriageStatuses.some((status) => item.eligibleMarriage.includes(status));
+    const isChildMatched =
+      profile.childStatuses.length === 0 ||
+      profile.childStatuses.some((status) => item.eligibleChildStatus.includes(status));
 
     return (
       isRegionMatched(item, profile.province, profile.city) &&
       isCategoryMatched(item, profile.categories) &&
-      isGenderMatched(item, profile.gender) &&
+      isGenderMatched(item, profile.genders) &&
       isAgeMatched &&
       isMarriageMatched &&
       isChildMatched &&
