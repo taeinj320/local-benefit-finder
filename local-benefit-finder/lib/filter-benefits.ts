@@ -2,6 +2,7 @@ import {
   BENEFIT_ITEMS,
   type BenefitCategory,
   type BenefitItem,
+  type ChildAgeGroup,
   type ChildStatus,
   type Gender,
   type MarriageStatus,
@@ -14,6 +15,7 @@ export type UserProfile = {
   gender: Exclude<Gender, "전체">;
   marriageStatus: MarriageStatus;
   childStatus: ChildStatus;
+  childAgeGroup: ChildAgeGroup;
   categories: BenefitCategory[];
 };
 
@@ -24,6 +26,10 @@ export function getAgeFromBirthYear(birthYear: number): number {
 }
 
 function isRegionMatched(item: BenefitItem, province: string, city: string): boolean {
+  if (item.regions.some((region) => region.province === "전국")) {
+    return true;
+  }
+
   return item.regions.some(
     (region) =>
       region.province === province &&
@@ -42,10 +48,29 @@ function isGenderMatched(item: BenefitItem, gender: Exclude<Gender, "전체">): 
   return item.eligibleGender === "전체" || item.eligibleGender === gender;
 }
 
+function isChildAgeMatched(item: BenefitItem, profile: UserProfile): boolean {
+  if (profile.childStatus !== "있음") {
+    return true;
+  }
+
+  if (profile.childAgeGroup === "해당 없음") {
+    return false;
+  }
+
+  return (
+    item.eligibleChildAgeTargets.includes("전체") ||
+    item.eligibleChildAgeTargets.includes(profile.childAgeGroup)
+  );
+}
+
 export function filterBenefits(profile: UserProfile): BenefitItem[] {
+  return filterBenefitsFromItems(profile, BENEFIT_ITEMS);
+}
+
+export function filterBenefitsFromItems(profile: UserProfile, items: BenefitItem[]): BenefitItem[] {
   const age = getAgeFromBirthYear(profile.birthYear);
 
-  return BENEFIT_ITEMS.filter((item) => {
+  return items.filter((item) => {
     const isAgeMatched = age >= item.ageRange.min && age <= item.ageRange.max;
     const isMarriageMatched = item.eligibleMarriage.includes(profile.marriageStatus);
     const isChildMatched = item.eligibleChildStatus.includes(profile.childStatus);
@@ -56,7 +81,8 @@ export function filterBenefits(profile: UserProfile): BenefitItem[] {
       isGenderMatched(item, profile.gender) &&
       isAgeMatched &&
       isMarriageMatched &&
-      isChildMatched
+      isChildMatched &&
+      isChildAgeMatched(item, profile)
     );
   });
 }
